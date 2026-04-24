@@ -24,14 +24,14 @@ function Dashboard() {
         <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col justify-between">
           <div>
             <nav className="flex flex-col gap-2">
-              <a href="#" className="bg-indigo-50 text-indigo-600 font-medium py-2 px-3 rounded-lg transition">
+              <a href="/dashboard" className="bg-indigo-50 text-indigo-600 font-medium py-2 px-3 rounded-lg transition">
                 Dashboard
               </a>
-              <a href="#" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
+              <a href="/transactions" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
                 Transactions
               </a>
-              <a href="#" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
-                Budgets
+              <a href="/categories" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
+                Categories
               </a>
             </nav>
           </div>

@@ -9,17 +9,15 @@ function Register({ isOpen, onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/register', formData);
+            // THE FIX: Changed '/register' to '/auth/register'
+            const response = await api.post('/auth/register', formData);
             
-            // AUTO-LOGIN LOGIC: Save the token directly from the registration response
             localStorage.setItem('token', response.data.token);
-            
-            // Redirect immediately to dashboard
             window.alert("Registration successful! Redirecting to dashboard...");
-            console.log("Registration successful:", response.data);
             window.location.href = '/dashboard'; 
 
         } catch (error) {
+            console.error("Registration error:", error);
             alert(error.response?.data?.message || "Registration failed. Please try again.");
         }
     };
