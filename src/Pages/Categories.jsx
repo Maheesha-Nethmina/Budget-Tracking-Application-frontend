@@ -8,6 +8,10 @@ function Categories() {
   const [error, setError] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');
 
+  // New State for Editing
+  const [editingId, setEditingId] = useState(null);
+  const [editFormData, setEditFormData] = useState({ name: '', type: 'INCOME' });
+
   const getUsernameFromToken = () => {
     const token = localStorage.getItem('token');
     if (!token) return null;
@@ -16,11 +20,7 @@ function Categories() {
       const payload = token.split('.')[1];
       const decodedPayload = atob(payload);
       const parsed = JSON.parse(decodedPayload);
-      
-      // Look for the username in either 'sub' or 'username' depending on your backend JWT setup
-      const extractedUsername = parsed.sub || parsed.username;
-      console.log("Decoded username from token:", extractedUsername); // Debugging line
-      return extractedUsername; 
+      return parsed.sub || parsed.username; 
     } catch (err) {
       console.error("Failed to decode token", err);
       return null;
@@ -29,24 +29,19 @@ function Categories() {
 
   useEffect(() => {
     const dynamicUsername = getUsernameFromToken();
-    
     if (dynamicUsername) {
       setCurrentUsername(dynamicUsername);
       fetchCategories(dynamicUsername);
     } else {
-      console.error("No valid username found in token. Redirecting to login.");
       window.location.href = '/';
     }
   }, []);
 
   const fetchCategories = async (username) => {
     try {
-      console.log(`Fetching categories for: ${username}`); // Debugging line
       const response = await api.get(`/categories/all/${username}`);
       setCategories(response.data);
     } catch (err) {
-      // This will now print the EXACT reason it failed in your browser console
-      console.error("Full Error Details:", err.response || err); 
       setError("Failed to fetch categories from the server.");
     }
   };
@@ -59,7 +54,6 @@ function Categories() {
       setNewCategory({ name: '', type: 'INCOME' }); 
       fetchCategories(currentUsername); 
     } catch (err) {
-      console.error("Add Error:", err.response || err);
       setError(err.response?.data?.message || "Failed to add category");
     }
   };
@@ -69,8 +63,28 @@ function Categories() {
       await api.delete(`/categories/delete/${categoryId}/${currentUsername}`);
       fetchCategories(currentUsername); 
     } catch (err) {
-      console.error("Delete Error:", err.response || err);
       alert("Failed to delete category");
+    }
+  };
+
+  // --- NEW EDIT FUNCTIONS ---
+  const startEditing = (category) => {
+    setEditingId(category.categoryId);
+    setEditFormData({ name: category.name, type: category.type });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditFormData({ name: '', type: 'INCOME' });
+  };
+
+  const handleUpdateCategory = async (categoryId) => {
+    try {
+      await api.put(`/categories/edit/${categoryId}/${currentUsername}`, editFormData);
+      setEditingId(null); // Close the edit form
+      fetchCategories(currentUsername); // Refresh the list
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update category");
     }
   };
 
@@ -153,19 +167,55 @@ function Categories() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {categories.map((cat) => (
-                    <div key={cat.categoryId} className="flex justify-between items-center p-4 border border-slate-200 rounded-lg hover:border-indigo-200 transition">
-                      <div>
-                        <p className="font-bold text-slate-800">{cat.name}</p>
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${cat.type === 'INCOME' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                          {cat.type}
-                        </span>
-                      </div>
-                      <button 
-                        onClick={() => handleDeleteCategory(cat.categoryId)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition"
-                      >
-                        Delete
-                      </button>
+                    <div key={cat.categoryId} className="p-4 border border-slate-200 rounded-lg hover:border-indigo-200 transition">
+                      
+                      {/* CONDITIONAL RENDERING: Show Edit Form OR Category Details */}
+                      {editingId === cat.categoryId ? (
+                        <div className="flex flex-col gap-2">
+                          <input 
+                            type="text" 
+                            className="w-full p-1 border border-slate-300 rounded"
+                            value={editFormData.name}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                          />
+                          <select 
+                            className="w-full p-1 border border-slate-300 rounded"
+                            value={editFormData.type}
+                            onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                          >
+                            <option value="INCOME">INCOME</option>
+                            <option value="EXPENSE">EXPENSE</option>
+                          </select>
+                          <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleUpdateCategory(cat.categoryId)} className="bg-emerald-500 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-emerald-600">Save</button>
+                            <button onClick={cancelEditing} className="bg-slate-300 text-slate-700 px-3 py-1 rounded text-sm font-semibold hover:bg-slate-400">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-bold text-slate-800">{cat.name}</p>
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${cat.type === 'INCOME' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                              {cat.type}
+                            </span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button 
+                              onClick={() => startEditing(cat)}
+                              className="text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 p-2 rounded-lg transition text-sm font-semibold"
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteCategory(cat.categoryId)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition text-sm font-semibold"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                     </div>
                   ))}
                 </div>
