@@ -11,7 +11,7 @@ function Login({ isOpen, onClose }) {
         try {
             const response = await api.post('/login', formData);
             localStorage.setItem('token', response.data.token);
-            window.alert("Login successful! Redirecting to dashboard...");
+            // window.alert("Login successful! Redirecting to dashboard...");
             console.log("Login successful:", response.data);
             window.location.href = '/dashboard'; 
         } catch (error) {
