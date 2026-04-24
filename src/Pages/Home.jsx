@@ -10,7 +10,6 @@ function Home() {
   return (
     <div className="home-container">
       
-      {/* Use the reusable Navbar and pass the state functions as props */}
       <Navbar 
         onLoginClick={() => setIsLoginOpen(true)} 
         onRegisterClick={() => setIsRegisterOpen(true)} 
@@ -25,7 +24,7 @@ function Home() {
         </button>
       </main>
 
-      {/* Modals */}
+      {/* Modals for login and registration */}
       <Login isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <Register isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
     </div>

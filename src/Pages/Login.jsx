@@ -9,20 +9,19 @@ function Login({ isOpen, onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/login', formData);
+            // THE FIX: Changed '/login' to '/auth/login'
+            const response = await api.post('/auth/login', formData);
             localStorage.setItem('token', response.data.token);
-            // window.alert("Login successful! Redirecting to dashboard...");
             console.log("Login successful:", response.data);
             window.location.href = '/dashboard'; 
         } catch (error) {
+            console.error("Login error:", error);
             alert(error.response?.data?.message || "Login failed");
         }
     };
 
     return (
-        /* Clicking the overlay closes the modal */
         <div className="modal-overlay" onClick={onClose}>
-            {/* e.stopPropagation() prevents clicks inside the card from closing the modal */}
             <div className="auth-card" onClick={(e) => e.stopPropagation()}>
                 <button className="close-btn" onClick={onClose}>&times;</button>
                 <h2>Login</h2>
