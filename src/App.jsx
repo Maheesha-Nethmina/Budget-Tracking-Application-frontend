@@ -1,15 +1,27 @@
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './Pages/Home';
+import Dashboard from './Pages/Dashboard';
+import Categories from './Pages/Categories';
+import Transactions from './Pages/Transactions';
+import Budgets from './Pages/Budgets';
 
 function App() {
-
+  const isAuthenticated = !!localStorage.getItem('token');
 
   return (
-    <>
-      <h1 className="text-3xl font-bold underline ">
-        Budget App
-      </h1>
-    </>
-  )
+    <Router>
+      <Routes>
+        
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Home />} />
+        <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />} />
+        <Route path="/categories" element={isAuthenticated ? <Categories /> : <Navigate to="/" />} />
+        <Route path="/transactions" element={isAuthenticated ? <Transactions /> : <Navigate to="/" />} />
+        <Route path="/budgets" element={isAuthenticated ? <Budgets /> : <Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+
+export default App;
