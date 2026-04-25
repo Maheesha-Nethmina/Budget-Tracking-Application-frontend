@@ -33,6 +33,9 @@ function Dashboard() {
               <a href="/categories" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
                 Categories
               </a>
+              <a href="/budgets" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
+                Budgets
+              </a>
             </nav>
           </div>
         </aside>
