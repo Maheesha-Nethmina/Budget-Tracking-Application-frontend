@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
+import Footer from '../Components/Footer';
 
 function Transactions() {
     const [transactions, setTransactions] = useState([]);
@@ -190,6 +191,7 @@ function Transactions() {
                     </div>
                 </div>
             )}
+            <Footer />
         </div>
     );
 }
