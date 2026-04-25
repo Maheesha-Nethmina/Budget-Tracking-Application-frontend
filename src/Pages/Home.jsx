@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Login from './Login';
 import Register from './Register';
 import Navbar from '../Components/Navbar';
+import Footer from '../Components/Footer';
 
 function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -27,7 +28,9 @@ function Home() {
       {/* Modals for login and registration */}
       <Login isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <Register isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
+        <Footer />
     </div>
+     
   );
 }
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
+import Footer from '../Components/Footer';
 
 function Categories() {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');
   
-  // Define the exact categories from the assignment
+  // Define the categories 
   const INCOME_OPTIONS = ['Salary', 'Freelance', 'Investments'];
   const EXPENSE_OPTIONS = ['Food', 'Transport', 'Rent', 'Entertainment'];
 
@@ -134,7 +135,7 @@ function Categories() {
               <h1 className="text-3xl font-bold text-slate-800">Manage Categories</h1>
               <p className="text-slate-500 mt-2">Create and organize your income and expense categories.</p>
             </div>
-            {/* ADD BUTTON */}
+            {/* add button */}
             <button 
                 onClick={() => setIsModalOpen(true)}
                 className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md transition"
@@ -154,7 +155,7 @@ function Categories() {
                       
                       {editingId === cat.categoryId ? (
                         <div className="flex flex-col gap-2">
-                          {/* EDIT FORM: Type Dropdown */}
+                          {/* edit form */}
                           <select 
                             className="w-full p-1 border border-slate-300 rounded"
                             value={editFormData.type}
@@ -170,7 +171,7 @@ function Categories() {
                             <option value="EXPENSE">EXPENSE</option>
                           </select>
 
-                          {/* EDIT FORM: Category Name Dropdown */}
+                          {/* edit form for Category Name Dropdown */}
                           <select 
                             className="w-full p-1 border border-slate-300 rounded"
                             value={editFormData.name}
@@ -208,7 +209,7 @@ function Categories() {
         </main>
       </div>
 
-      {/* --- ADD CATEGORY MODAL --- */}
+      {/* add category modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-xl">
@@ -237,7 +238,6 @@ function Categories() {
 
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Category Name</label>
-                        {/* Replaced Text Input with Select Dropdown */}
                         <select 
                             className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                             value={newCategory.name}
@@ -262,6 +262,7 @@ function Categories() {
             </div>
         </div>
       )}
+       <Footer />
     </div>
   );
 }
