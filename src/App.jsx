@@ -3,6 +3,7 @@ import Home from './Pages/Home';
 import Dashboard from './Pages/Dashboard';
 import Categories from './Pages/Categories';
 import Transactions from './Pages/Transactions';
+import Budgets from './Pages/Budgets';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -15,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />} />
         <Route path="/categories" element={isAuthenticated ? <Categories /> : <Navigate to="/" />} />
         <Route path="/transactions" element={isAuthenticated ? <Transactions /> : <Navigate to="/" />} />
+        <Route path="/budgets" element={isAuthenticated ? <Budgets /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
