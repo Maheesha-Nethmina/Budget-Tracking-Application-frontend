@@ -4,9 +4,18 @@ import Navbar from '../Components/Navbar';
 
 function Categories() {
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState({ name: '', type: 'INCOME' });
   const [error, setError] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');
+  
+  // Define the exact categories from the assignment
+  const INCOME_OPTIONS = ['Salary', 'Freelance', 'Investments'];
+  const EXPENSE_OPTIONS = ['Food', 'Transport', 'Rent', 'Entertainment'];
+
+  // Default to the first Income option
+  const [newCategory, setNewCategory] = useState({ name: INCOME_OPTIONS[0], type: 'INCOME' });
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // New State for Editing
   const [editingId, setEditingId] = useState(null);
@@ -51,7 +60,8 @@ function Categories() {
     setError('');
     try {
       await api.post(`/categories/add/${currentUsername}`, newCategory);
-      setNewCategory({ name: '', type: 'INCOME' }); 
+      setNewCategory({ name: INCOME_OPTIONS[0], type: 'INCOME' }); // Reset to default
+      setIsModalOpen(false); 
       fetchCategories(currentUsername); 
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add category");
@@ -59,15 +69,16 @@ function Categories() {
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    try {
-      await api.delete(`/categories/delete/${categoryId}/${currentUsername}`);
-      fetchCategories(currentUsername); 
-    } catch (err) {
-      alert("Failed to delete category");
+    if (window.confirm("Are you sure you want to delete this category?")) {
+        try {
+            await api.delete(`/categories/delete/${categoryId}/${currentUsername}`);
+            fetchCategories(currentUsername); 
+        } catch (err) {
+            alert("Failed to delete category");
+        }
     }
   };
 
-  // --- NEW EDIT FUNCTIONS ---
   const startEditing = (category) => {
     setEditingId(category.categoryId);
     setEditFormData({ name: category.name, type: category.type });
@@ -81,8 +92,8 @@ function Categories() {
   const handleUpdateCategory = async (categoryId) => {
     try {
       await api.put(`/categories/edit/${categoryId}/${currentUsername}`, editFormData);
-      setEditingId(null); // Close the edit form
-      fetchCategories(currentUsername); // Refresh the list
+      setEditingId(null); 
+      fetchCategories(currentUsername); 
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update category");
     }
@@ -115,77 +126,58 @@ function Categories() {
 
         {/* Main Content */}
         <main className="flex-1 p-8 md:p-10">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-800">Manage Categories</h1>
-            <p className="text-slate-500 mt-2">Create and organize your income and expense categories.</p>
+          <header className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">Manage Categories</h1>
+              <p className="text-slate-500 mt-2">Create and organize your income and expense categories.</p>
+            </div>
+            {/* ADD BUTTON */}
+            <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md transition"
+            >
+                + Add Category
+            </button>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Add Category Form */}
-            <div className="md:col-span-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">Add New Category</h2>
-              {error && <p className="text-red-500 text-sm mb-4 font-semibold">{error}</p>}
-              
-              <form onSubmit={handleAddCategory} className="flex flex-col gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Category Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g., Groceries, Salary" 
-                    className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={newCategory.name}
-                    onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
-                  <select 
-                    className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={newCategory.type}
-                    onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value })}
-                  >
-                    <option value="INCOME">Income</option>
-                    <option value="EXPENSE">Expense</option>
-                  </select>
-                </div>
-
-                <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition mt-2">
-                  Add Category
-                </button>
-              </form>
-            </div>
-
-            {/* Categories List */}
-            <div className="md:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">Your Categories</h2>
-              
-              {categories.length === 0 ? (
+          {/* Categories List */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            {categories.length === 0 ? (
                 <p className="text-slate-500">No categories found. Create one to get started!</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categories.map((cat) => (
-                    <div key={cat.categoryId} className="p-4 border border-slate-200 rounded-lg hover:border-indigo-200 transition">
+                    <div key={cat.categoryId} className="p-4 border border-slate-200 rounded-lg hover:border-indigo-200 transition bg-slate-50">
                       
-                      {/* CONDITIONAL RENDERING: Show Edit Form OR Category Details */}
                       {editingId === cat.categoryId ? (
                         <div className="flex flex-col gap-2">
-                          <input 
-                            type="text" 
-                            className="w-full p-1 border border-slate-300 rounded"
-                            value={editFormData.name}
-                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                          />
+                          {/* EDIT FORM: Type Dropdown */}
                           <select 
                             className="w-full p-1 border border-slate-300 rounded"
                             value={editFormData.type}
-                            onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                            onChange={(e) => {
+                                const selectedType = e.target.value;
+                                setEditFormData({ 
+                                    type: selectedType, 
+                                    name: selectedType === 'INCOME' ? INCOME_OPTIONS[0] : EXPENSE_OPTIONS[0] 
+                                });
+                            }}
                           >
                             <option value="INCOME">INCOME</option>
                             <option value="EXPENSE">EXPENSE</option>
                           </select>
+
+                          {/* EDIT FORM: Category Name Dropdown */}
+                          <select 
+                            className="w-full p-1 border border-slate-300 rounded"
+                            value={editFormData.name}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                          >
+                            {(editFormData.type === 'INCOME' ? INCOME_OPTIONS : EXPENSE_OPTIONS).map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                          
                           <div className="flex gap-2 mt-2">
                             <button onClick={() => handleUpdateCategory(cat.categoryId)} className="bg-emerald-500 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-emerald-600">Save</button>
                             <button onClick={cancelEditing} className="bg-slate-300 text-slate-700 px-3 py-1 rounded text-sm font-semibold hover:bg-slate-400">Cancel</button>
@@ -200,31 +192,73 @@ function Categories() {
                             </span>
                           </div>
                           <div className="flex gap-1">
-                            <button 
-                              onClick={() => startEditing(cat)}
-                              className="text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 p-2 rounded-lg transition text-sm font-semibold"
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteCategory(cat.categoryId)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition text-sm font-semibold"
-                            >
-                              Delete
-                            </button>
+                            <button onClick={() => startEditing(cat)} className="text-indigo-500 hover:text-indigo-700 p-2 text-sm font-semibold">Edit</button>
+                            <button onClick={() => handleDeleteCategory(cat.categoryId)} className="text-red-500 hover:text-red-700 p-2 text-sm font-semibold">Delete</button>
                           </div>
                         </div>
                       )}
-
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-
+            )}
           </div>
         </main>
       </div>
+
+      {/* --- ADD CATEGORY MODAL --- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-xl">
+                <h2 className="text-xl font-bold text-slate-800 mb-6">New Category</h2>
+                {error && <p className="text-red-500 text-sm mb-4 font-semibold">{error}</p>}
+                
+                <form onSubmit={handleAddCategory} className="flex flex-col gap-4">
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
+                        <select 
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                            value={newCategory.type}
+                            onChange={(e) => {
+                                const selectedType = e.target.value;
+                                setNewCategory({ 
+                                    type: selectedType, 
+                                    name: selectedType === 'INCOME' ? INCOME_OPTIONS[0] : EXPENSE_OPTIONS[0] 
+                                });
+                            }}
+                        >
+                            <option value="INCOME">Income</option>
+                            <option value="EXPENSE">Expense</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Category Name</label>
+                        {/* Replaced Text Input with Select Dropdown */}
+                        <select 
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                            value={newCategory.name}
+                            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                            required
+                        >
+                            {(newCategory.type === 'INCOME' ? INCOME_OPTIONS : EXPENSE_OPTIONS).map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex gap-3 mt-4">
+                        <button type="submit" className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                            Add Category
+                        </button>
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-300 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
