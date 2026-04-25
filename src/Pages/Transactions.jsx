@@ -7,7 +7,16 @@ function Transactions() {
     const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({ title: '', amount: '', type: '', transactionDate: new Date().toISOString().split('T')[0], categoryId: '', note: '' });
     const [editingId, setEditingId] = useState(null);
-    const [filters, setFilters] = useState({ type: 'ALL', categoryId: 'ALL', sortBy: 'newest' });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Filters State
+    const [filters, setFilters] = useState({ 
+        type: 'ALL', 
+        categoryId: 'ALL', 
+        startDate: '', 
+        endDate: '',
+        sortBy: 'newest' 
+    });
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -34,6 +43,7 @@ function Transactions() {
         if (editingId) await api.put(`/transactions/edit/${editingId}/${username}`, formData);
         else await api.post(`/transactions/add/${username}`, formData);
         
+        setIsModalOpen(false);
         setEditingId(null);
         setFormData({ title: '', amount: '', type: '', transactionDate: new Date().toISOString().split('T')[0], categoryId: '', note: '' });
         fetchTransactions(username);
@@ -47,96 +57,100 @@ function Transactions() {
         }
     };
 
+    // Reset all filters
+    const clearFilters = () => {
+        setFilters({ type: 'ALL', categoryId: 'ALL', startDate: '', endDate: '', sortBy: 'newest' });
+    };
+
     const filteredTransactions = useMemo(() => {
-        let list = [...transactions].filter(tx => {
+        return [...transactions].filter(tx => {
             const matchType = filters.type === 'ALL' || tx.type === filters.type;
             const matchCat = filters.categoryId === 'ALL' || tx.categoryId.toString() === filters.categoryId;
-            return matchType && matchCat;
+            const matchStart = !filters.startDate || tx.transactionDate >= filters.startDate;
+            const matchEnd = !filters.endDate || tx.transactionDate <= filters.endDate;
+            return matchType && matchCat && matchStart && matchEnd;
+        }).sort((a,b) => {
+            if (filters.sortBy === 'newest') return new Date(b.transactionDate) - new Date(a.transactionDate);
+            if (filters.sortBy === 'oldest') return new Date(a.transactionDate) - new Date(b.transactionDate);
+            return 0;
         });
-        
-        if (filters.sortBy === 'newest') list.sort((a,b) => new Date(b.transactionDate) - new Date(a.transactionDate));
-        else if (filters.sortBy === 'oldest') list.sort((a,b) => new Date(a.transactionDate) - new Date(b.transactionDate));
-        else if (filters.sortBy === 'highAmount') list.sort((a,b) => b.amount - a.amount);
-        
-        return list;
     }, [transactions, filters]);
 
+    // Helper to truncate notes
+    const truncateNote = (note) => {
+        if (!note) return "";
+        return note.length > 20 ? note.substring(0, 20) + "..." : note;
+    };
+
     return (
-        <div className="flex h-screen bg-slate-50 overflow-hidden">
-            {/* --- Sidebar (Consistent with Dashboard) --- */}
-            <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col shadow-sm z-10">
-                <h2 className="text-xl font-bold text-indigo-600 mb-8 px-2">FinanceApp</h2>
-                <nav className="flex flex-col gap-2">
-                    <a href="/dashboard" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">Dashboard</a>
-                    <a href="/transactions" className="bg-indigo-50 text-indigo-600 font-medium py-2 px-3 rounded-lg transition">Transactions</a>
-                    <a href="/categories" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">Categories</a>
-                </nav>
-            </aside>
+        <div className="flex flex-col min-h-screen bg-slate-50 font-sans">
+            <Navbar isAuthenticated={true} onLogout={() => {localStorage.removeItem('token'); window.location.href='/';}} />
 
-            {/* --- Main Content --- */}
-            <main className="flex-1 overflow-y-auto">
-                <Navbar isAuthenticated={true} onLogout={() => {localStorage.removeItem('token'); window.location.href='/';}} />
-                
-                <div className="p-8 max-w-6xl mx-auto">
-                    <h1 className="text-2xl font-bold text-slate-800 mb-6">Manage Transactions</h1>
+            <div className="flex flex-1">
+                {/* Sidebar */}
+                <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col shadow-sm">
+                    <nav className="flex flex-col gap-2">
+                        <a href="/dashboard" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">Dashboard</a>
+                        <a href="/transactions" className="bg-indigo-50 text-indigo-600 font-medium py-2 px-3 rounded-lg transition">Transactions</a>
+                        <a href="/categories" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">Categories</a>
+                    </nav>
+                </aside>
 
-                    {/* Add/Edit Form */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
-                        <h2 className="text-md font-bold text-slate-700 mb-4">{editingId ? 'Edit Transaction' : 'Add New Transaction'}</h2>
-                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
-                            <input className="lg:col-span-1 p-2 border border-slate-200 rounded-lg" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
-                            <input className="lg:col-span-1 p-2 border border-slate-200 rounded-lg" type="number" placeholder="Amount" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} required />
-                            <select className="lg:col-span-1 p-2 border border-slate-200 rounded-lg" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} required>
-                                <option value="" disabled>Type</option>
-                                <option value="INCOME">Income</option>
-                                <option value="EXPENSE">Expense</option>
-                            </select>
-                            <select className="lg:col-span-1 p-2 border border-slate-200 rounded-lg" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} required>
-                                <option value="" disabled>Category</option>
-                                {categories.map(c => <option key={c.categoryId} value={c.categoryId}>{c.name}</option>)}
-                            </select>
-                            <input className="lg:col-span-1 p-2 border border-slate-200 rounded-lg" type="date" value={formData.transactionDate} onChange={e => setFormData({...formData, transactionDate: e.target.value})} required />
-                            <button className="bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition">{editingId ? 'Update' : 'Save'}</button>
-                        </form>
+                <main className="flex-1 p-8">
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-2xl font-bold text-slate-800">Manage Transactions</h1>
+                        <button onClick={() => setIsModalOpen(true)} className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md">
+                            + Add Transaction
+                        </button>
                     </div>
 
-                    {/* Filter & Sort Bar */}
-                    <div className="flex gap-4 mb-6">
-                        <select className="p-2 border border-slate-200 rounded-lg text-sm" onChange={e => setFilters({...filters, type: e.target.value})}>
+                    {/* Filter Bar */}
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
+                        <span className="text-sm font-semibold text-slate-500 uppercase">Filters:</span>
+                        <select className="p-2 border rounded-lg text-sm" value={filters.type} onChange={e => setFilters({...filters, type: e.target.value})}>
                             <option value="ALL">All Types</option>
                             <option value="INCOME">Income</option>
                             <option value="EXPENSE">Expense</option>
                         </select>
-                        <select className="p-2 border border-slate-200 rounded-lg text-sm" onChange={e => setFilters({...filters, sortBy: e.target.value})}>
-                            <option value="newest">Date: Newest</option>
-                            <option value="oldest">Date: Oldest</option>
-                            <option value="highAmount">Amount: High to Low</option>
+                        <select className="p-2 border rounded-lg text-sm" value={filters.categoryId} onChange={e => setFilters({...filters, categoryId: e.target.value})}>
+                            <option value="ALL">All Categories</option>
+                            {categories.map(c => <option key={c.categoryId} value={c.categoryId}>{c.name}</option>)}
                         </select>
+                        <input type="date" className="p-2 border rounded-lg text-sm" value={filters.startDate} onChange={e => setFilters({...filters, startDate: e.target.value})} />
+                        <input type="date" className="p-2 border rounded-lg text-sm" value={filters.endDate} onChange={e => setFilters({...filters, endDate: e.target.value})} />
+                        
+                        {/* New Clear Button */}
+                        <button onClick={clearFilters} className="ml-auto bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition">
+                            Clear Filters
+                        </button>
                     </div>
 
-                    {/* Data Table */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    {/* Table */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50">
-                                <tr className="text-slate-500 text-xs uppercase">
-                                    <th className="p-4">Date</th>
-                                    <th className="p-4">Title</th>
-                                    <th className="p-4">Category</th>
-                                    <th className="p-4 text-right">Amount</th>
-                                    <th className="p-4 text-center">Actions</th>
+                            <thead className="bg-slate-50 border-b">
+                                <tr>
+                                    <th className="p-4 text-xs uppercase text-slate-500">Date</th>
+                                    <th className="p-4 text-xs uppercase text-slate-500">Title & Note</th>
+                                    <th className="p-4 text-xs uppercase text-slate-500">Category</th>
+                                    <th className="p-4 text-xs uppercase text-slate-500 text-right">Amount</th>
+                                    <th className="p-4 text-xs uppercase text-slate-500 text-center">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y">
                                 {filteredTransactions.map(tx => (
                                     <tr key={tx.transactionId} className="hover:bg-slate-50 transition">
                                         <td className="p-4 text-sm text-slate-600">{tx.transactionDate}</td>
-                                        <td className="p-4 font-bold text-slate-800">{tx.title}</td>
-                                        <td className="p-4"><span className="px-3 py-1 bg-slate-100 rounded-full text-xs">{tx.categoryName}</span></td>
+                                        <td className="p-4">
+                                            <div className="font-bold text-slate-800">{tx.title}</div>
+                                            {tx.note && <div className="text-xs text-slate-400">{truncateNote(tx.note)}</div>}
+                                        </td>
+                                        <td className="p-4 text-sm text-slate-600">{tx.categoryName}</td>
                                         <td className={`p-4 text-right font-bold ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
                                             {tx.type === 'INCOME' ? '+' : '-'}${tx.amount}
                                         </td>
                                         <td className="p-4 text-center">
-                                            <button onClick={() => {setEditingId(tx.transactionId); setFormData(tx);}} className="text-indigo-600 font-semibold mr-4 hover:underline">Edit</button>
+                                            <button onClick={() => {setEditingId(tx.transactionId); setFormData(tx); setIsModalOpen(true);}} className="text-indigo-600 font-semibold mr-4 hover:underline">Edit</button>
                                             <button onClick={() => handleDelete(tx.transactionId)} className="text-red-500 font-semibold hover:underline">Delete</button>
                                         </td>
                                     </tr>
@@ -144,8 +158,37 @@ function Transactions() {
                             </tbody>
                         </table>
                     </div>
+                </main>
+            </div>
+
+            {/* Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-2xl w-full max-w-lg shadow-xl">
+                        <h2 className="text-xl font-bold mb-6">{editingId ? 'Edit Transaction' : 'Add New Transaction'}</h2>
+                        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+                            <input className="p-3 border rounded-lg" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+                            <input className="p-3 border rounded-lg" type="number" placeholder="Amount" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} required />
+                            <select className="p-3 border rounded-lg" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} required>
+                                <option value="" disabled>Type</option>
+                                <option value="INCOME">Income</option>
+                                <option value="EXPENSE">Expense</option>
+                            </select>
+                            <select className="p-3 border rounded-lg" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} required>
+                                <option value="" disabled>Category</option>
+                                {categories.map(c => <option key={c.categoryId} value={c.categoryId}>{c.name}</option>)}
+                            </select>
+                            <input className="p-3 border rounded-lg" type="date" value={formData.transactionDate} onChange={e => setFormData({...formData, transactionDate: e.target.value})} required />
+                            <textarea className="p-3 border rounded-lg" placeholder="Optional note" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
+                            
+                            <div className="flex gap-3 mt-4">
+                                <button type="submit" className="flex-1 bg-indigo-600 text-white p-3 rounded-lg font-bold">Save</button>
+                                <button type="button" onClick={() => {setIsModalOpen(false); setEditingId(null);}} className="flex-1 bg-slate-200 p-3 rounded-lg font-bold">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </main>
+            )}
         </div>
     );
 }
