@@ -18,12 +18,13 @@ function Sidebar({ activePage }) {
                 <a href="/categories" className={getLinkClass('categories')}>
                     Categories
                 </a>
-                <a href="/transactions" className={getLinkClass('transactions')}>
-                    Transactions
-                </a>
                 <a href="/budgets" className={getLinkClass('budgets')}>
                     Budgets
                 </a>
+                <a href="/transactions" className={getLinkClass('transactions')}>
+                    Transactions
+                </a>
+                
             </nav>
         </aside>
     );
