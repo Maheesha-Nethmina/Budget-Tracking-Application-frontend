@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
-import Sidebar from '../Components/Sidebar'; // Imported Sidebar
+import Sidebar from '../Components/Sidebar'; 
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 
 function Dashboard() {
@@ -60,7 +60,6 @@ function Dashboard() {
 
       <div className="flex flex-1">
         
-        {/* Replaced hardcoded aside with Sidebar Component */}
         <Sidebar activePage="dashboard" />
         
         {/* Main Content */}

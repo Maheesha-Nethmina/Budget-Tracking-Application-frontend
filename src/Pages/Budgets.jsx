@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
-import Sidebar from '../Components/Sidebar'; // Imported Sidebar
+import Sidebar from '../Components/Sidebar'; 
 
 function Budgets() {
     const [budgets, setBudgets] = useState([]);
@@ -96,7 +96,6 @@ function Budgets() {
             <Navbar isAuthenticated={true} onLogout={() => { localStorage.removeItem('token'); window.location.href = '/'; }} />
 
             <div className="flex flex-1">
-                {/* Replaced hardcoded aside with Sidebar Component */}
                 <Sidebar activePage="budgets" />
 
                 {/* Main Content */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
-import Sidebar from '../Components/Sidebar'; // Imported Sidebar
+import Sidebar from '../Components/Sidebar'; 
 
 function Categories() {
   const [categories, setCategories] = useState([]);
@@ -111,7 +111,6 @@ function Categories() {
       <Navbar isAuthenticated={true} onLogout={handleLogout} />
 
       <div className="flex flex-1">
-        {/* Replaced hardcoded aside with Sidebar Component */}
         <Sidebar activePage="categories" />
 
         {/* Main Content */}

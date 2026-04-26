@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
-import Sidebar from '../Components/Sidebar'; // Imported Sidebar
+import Sidebar from '../Components/Sidebar';
 
 function Transactions() {
     const [transactions, setTransactions] = useState([]);
@@ -89,7 +89,6 @@ function Transactions() {
             <Navbar isAuthenticated={true} onLogout={() => {localStorage.removeItem('token'); window.location.href='/';}} />
 
             <div className="flex flex-1">
-                {/* Replaced hardcoded aside with Sidebar Component */}
                 <Sidebar activePage="transactions" />
 
                 <main className="flex-1 p-8">

@@ -1,7 +1,6 @@
 import React from 'react';
 
 function Sidebar({ activePage }) {
-    // Helper function to apply the correct CSS classes based on the active page
     const getLinkClass = (pageName) => {
         const baseClass = "font-medium py-2 px-3 rounded-lg transition";
         if (activePage === pageName) {
