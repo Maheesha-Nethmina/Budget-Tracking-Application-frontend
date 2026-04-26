@@ -3,8 +3,8 @@
 A comprehensive, full-stack web application designed to help users track their income, expenses, set monthly budgets, and gain visual insights into their financial health.
 
 ## 🔗 Repository Links
-* **Frontend Repository:**  https://github.com/Maheesha-Nethmina/Budget-Tracking-Application-Backend
-* **Backend Repository:** https://github.com/Maheesha-Nethmina/Budget-Tracking-Application-frontend
+* **Backend Repository:**  https://github.com/Maheesha-Nethmina/Budget-Tracking-Application-Backend
+* **Frontend Repository:** https://github.com/Maheesha-Nethmina/Budget-Tracking-Application-frontend
 
 ## 🚀 Features
 
