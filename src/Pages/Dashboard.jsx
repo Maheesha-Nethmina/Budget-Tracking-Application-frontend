@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../Service/api';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
+import Sidebar from '../Components/Sidebar'; 
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 
 function Dashboard() {
@@ -59,25 +60,7 @@ function Dashboard() {
 
       <div className="flex flex-1">
         
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col justify-between">
-          <div>
-            <nav className="flex flex-col gap-2">
-              <a href="/dashboard" className="bg-indigo-50 text-indigo-600 font-medium py-2 px-3 rounded-lg transition">
-                Dashboard
-              </a>
-              <a href="/transactions" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
-                Transactions
-              </a>
-              <a href="/categories" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
-                Categories
-              </a>
-              <a href="/budgets" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium py-2 px-3 rounded-lg transition">
-                Budgets
-              </a>
-            </nav>
-          </div>
-        </aside>
+        <Sidebar activePage="dashboard" />
         
         {/* Main Content */}
         <main className="flex-1 p-8 md:p-10 overflow-y-auto">
