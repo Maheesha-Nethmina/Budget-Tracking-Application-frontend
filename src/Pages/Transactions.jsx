@@ -142,7 +142,7 @@ function Transactions() {
                                         </td>
                                         <td className="p-4 text-sm text-slate-600">{tx.categoryName}</td>
                                         <td className={`p-4 text-right font-bold ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                            {tx.type === 'INCOME' ? '+' : '-'}${tx.amount}
+                                            {tx.type === 'INCOME' ? '+' : '-'}Rs.{tx.amount}
                                         </td>
                                         <td className="p-4 text-center">
                                             <button onClick={() => {setEditingId(tx.transactionId); setFormData(tx); setIsModalOpen(true);}} className="text-indigo-600 font-semibold mr-4 hover:underline">Edit</button>
